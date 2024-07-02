@@ -1,0 +1,16 @@
+services:
+  web:
+    # development:
+    # build: .
+    # testing:
+    image: barea123/algocell-home-assignment
+    # Command used to run the program (same as in Dockerfile)
+    # development:
+    # command: streamlit run streamlit_app.py --server.port=8501 --server.address=0.0.0.0 --server.runOnSave=true
+    # testing:
+    command: streamlit run streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - 8501:8501
+    # development:
+    # volumes:
+    #   - .:/app
