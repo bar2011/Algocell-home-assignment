@@ -1,7 +1,7 @@
 import streamlit as st
 
-from llm import ask, format_question
-from extract_data import extract_formatted_data
+from llm import ask, format_question, format_messages
+from extract_data import extract_data_from_file_list
 
 st.title("Homework result:")
 
@@ -20,9 +20,8 @@ def reset_messages():
   st.session_state["messages"] = [
     {"role": "assistant", "content": "How can I help you?"}
   ]
-  # Initialize formatted_messages with the data
-  formatted_data = extract_formatted_data(data_files)
-  st.session_state["formatted_messages"] = formatted_data
+  # Save data in session_state
+  st.session_state["data"] = extract_data_from_file_list(data_files)
 
 if "messages" not in st.session_state:
   reset_messages()
@@ -51,12 +50,9 @@ if prompt := st.chat_input():
   st.chat_message("user").write(prompt)
 
   # Format the user's question
-  prompt = format_question(st.session_state.formatted_messages, prompt)
+  previous_messages = format_messages(st.session_state.messages)
+  prompt = format_question(st.session_state.data, previous_messages, prompt)
   # Ask the LLM and display its response
   response = ask(prompt)
   st.session_state.messages.append({"role": "assistant", "content": response})
   st.chat_message("assistant").write(response)
-
-  # Setting formatted_messages and not adding
-  # because prompt contains all previous messages
-  st.session_state.formatted_messages = f"{prompt}\n{response}\n:EOA:"

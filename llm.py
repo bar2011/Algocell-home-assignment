@@ -15,15 +15,25 @@ llm = LlamaCpp(
 		n_ctx=2048,
 		max_tokens=None,
 		top_p=1,
-		stop=[":EOA:", "\n"],
+		stop=["[/Answer]", "\n"],
 		callback_manager=callback_manager,
 		verbose=True,  # Verbose is required to pass to the callback manager
 )
 
-def format_question(previous_messages, question):
+def format_messages(messages):
+	messagesText = ""
+
+	for message in messages:
+		roleAsWord = "Answer" if message["role"] == "assistant" else "Question"
+		messagesText += f"[{roleAsWord}]\n{message["content"]}\n[/{roleAsWord}]\n"
+
+	return messagesText
+
+def format_question(data, previous_messages, question):
 	prompt = PromptTemplate.from_template(
 		question_template
 	).format(
+		data=data,
 		previous_messages=previous_messages,
 		question=question
 	)
