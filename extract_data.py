@@ -1,5 +1,4 @@
 import pdfplumber
-from langchain_core.prompts import PromptTemplate
 
 def extract_data_from_file(feed):
   data = []

@@ -1,6 +1,6 @@
 import streamlit as st
 
-from llm import ask, format_question, format_messages
+from llm import ask, format_question
 from extract_data import extract_data_from_file_list
 
 st.title("Homework result:")
@@ -40,8 +40,6 @@ st.subheader("Ask the model question about the data uploaded:")
 
 # Display all message except the intial data message
 for msg in st.session_state.messages:
-  if msg["role"] == "data":
-    continue
   st.chat_message(msg["role"]).write(msg["content"])
 
 if prompt := st.chat_input():
