@@ -1,6 +1,7 @@
 from langchain_community.llms.llamacpp import LlamaCpp
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain_core.prompts import PromptTemplate
+import errors
 
 # Get question template from file
 question_template = open("./llm-templates/question-template.txt", "r").read()
@@ -32,9 +33,10 @@ def format_question(data, question):
 		question=question
 	)
 
+	# Check that tokens is less than maximum acceptable
 	tokens = llm.get_num_tokens(prompt)
 	if tokens > llm.n_ctx:
-		return -1
+		return errors.MaxTokenNumberExceededError(llm.n_ctx, tokens)
 
 	return prompt
 

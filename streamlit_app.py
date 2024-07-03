@@ -25,6 +25,10 @@ def reset_messages():
 
 if "messages" not in st.session_state:
   reset_messages()
+if "is_processing" not in st.session_state:
+  st.session_state.is_processing = False
+if "prompt" not in st.session_state:
+  st.session_state.prompt = ""
 # Store previous uploaded files to detect changes
 if "previous_data_files" not in st.session_state:
   st.session_state["previous_data_files"] = []
@@ -42,14 +46,26 @@ st.subheader("Ask the model question about the data uploaded:")
 for msg in st.session_state.messages:
   st.chat_message(msg["role"]).write(msg["content"])
 
-if prompt := st.chat_input():
+if prompt := st.chat_input(disabled=st.session_state.is_processing):
+  st.session_state.is_processing = True
+  st.session_state.prompt = prompt
+  st.rerun()
+
+if st.session_state.is_processing:
+  prompt = st.session_state.prompt
   # Display the user's message
-  st.session_state.messages.append({"role": "user", "content": prompt})
-  st.chat_message("user").write(prompt)
+  st.session_state.messages.append({"role": "user", "content": st.session_state.prompt})
+  st.chat_message("user").write(st.session_state.prompt)
 
   # Format the user's question
-  prompt = format_question(st.session_state.data, prompt)
+  prompt = format_question(st.session_state.data, st.session_state.prompt)
+  if isinstance(prompt, Exception):
+    st.error(prompt.message)
+    exit()
   # Ask the LLM and display its response
   response = ask(prompt)
   st.session_state.messages.append({"role": "assistant", "content": response})
   st.chat_message("assistant").write(response)
+
+  st.session_state.is_processing = False
+  st.rerun()
