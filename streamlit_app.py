@@ -48,8 +48,7 @@ if prompt := st.chat_input():
   st.chat_message("user").write(prompt)
 
   # Format the user's question
-  previous_messages = format_messages(st.session_state.messages)
-  prompt = format_question(st.session_state.data, previous_messages, prompt)
+  prompt = format_question(st.session_state.data, prompt)
   # Ask the LLM and display its response
   response = ask(prompt)
   st.session_state.messages.append({"role": "assistant", "content": response})

@@ -11,32 +11,31 @@ callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 
 # Specified arguments so that messages will be short and non-repeating (as possible)
 llm = LlamaCpp(
-		model_path="/app/llama-2-7b.Q4_K_M.gguf",
-		n_ctx=2048,
-		max_tokens=None,
-		top_p=1,
-		stop=["[/Answer]", "\n"],
-		callback_manager=callback_manager,
-		verbose=True,  # Verbose is required to pass to the callback manager
+	model_path="/app/llama-2-7b.Q4_K_M.gguf",
+	n_ctx=2048,
+	max_tokens=128,
+	top_p=1,
+	stop=["[/ANSWER]"],
+	callback_manager=callback_manager,
+	verbose=True,  # Verbose is required to pass to the callback manager
 )
 
-def format_messages(messages):
-	messagesText = ""
+# question-template.txt = completeley overhal the template, and remove context via previous messages
+# llm.py = Change llm parameters to better match new template, and remove need for previous messages, and add check for token count
+# streamlit_app.py = Remove st.session_state.messages
 
-	for message in messages:
-		roleAsWord = "Answer" if message["role"] == "assistant" else "Question"
-		messagesText += f"[{roleAsWord}]\n{message["content"]}\n[/{roleAsWord}]\n"
-
-	return messagesText
-
-def format_question(data, previous_messages, question):
+def format_question(data, question):
 	prompt = PromptTemplate.from_template(
 		question_template
 	).format(
 		data=data,
-		previous_messages=previous_messages,
 		question=question
 	)
+
+	tokens = llm.get_num_tokens(prompt)
+	if tokens > llm.n_ctx:
+		return -1
+
 	return prompt
 
 def ask(prompt):
