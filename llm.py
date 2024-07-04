@@ -1,13 +1,20 @@
 from langchain_community.llms.llamacpp import LlamaCpp
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain_core.prompts import PromptTemplate
-import errors
+
+class MaxTokenNumberExceededError(Exception):
+	message = """Maximum token number that the model can take was exceeded:\n
+Maximum is {maxTokens}, and received {tokenNumber}.\n
+To resolve this error, you could try to remove data files, or shorten your current request."""
+	def __init__(self, maxTokens, tokenNumber) -> None:
+		self.message = self.message.replace("{maxTokens}", str(maxTokens)).replace("{tokenNumber}", str(tokenNumber))
+		super().__init__(self.message)
 
 # Get question template from file
-question_template = open("./llm-templates/question-template.txt", "r").read()
+prompt_template = open("./prompt-template.txt", "r").read()
 
-# StreamingStdOutCallbackHandler prints messages to the console at special events
-# that provide useful debugging info.
+# StreamingStdOutCallbackHandler prints messages to the console when the LLM
+# does an action with info to help debugging
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 
 # Specified arguments so that messages will be short and non-repeating (as possible)
@@ -21,22 +28,21 @@ llm = LlamaCpp(
 	verbose=True,  # Verbose is required to pass to the callback manager
 )
 
-# question-template.txt = completeley overhal the template, and remove context via previous messages
-# llm.py = Change llm parameters to better match new template, and remove need for previous messages, and add check for token count
-# streamlit_app.py = Remove st.session_state.messages
+max_acceptable_prompt_tokens = 30
 
-def format_question(data, question):
+def format_prompt(data, prompt):
+	# Format the prompt from the template using the required arguments
 	prompt = PromptTemplate.from_template(
-		question_template
+		prompt_template
 	).format(
 		data=data,
-		question=question
+		question=prompt
 	)
 
-	# Check that tokens is less than maximum acceptable
+	# Check that token number is less than maximum acceptable
 	tokens = llm.get_num_tokens(prompt)
 	if tokens > llm.n_ctx:
-		return errors.MaxTokenNumberExceededError(llm.n_ctx, tokens)
+		return MaxTokenNumberExceededError(llm.n_ctx, tokens)
 
 	return prompt
 
