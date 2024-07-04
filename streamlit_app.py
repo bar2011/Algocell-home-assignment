@@ -1,6 +1,6 @@
 import streamlit as st
 
-from llm import ask, format_question
+from llm import ask, format_question, llm, question_template
 from extract_data import extract_data_from_file_list
 
 st.title("Homework result:")
@@ -23,12 +23,16 @@ def reset_messages():
   # Save data in session_state
   st.session_state["data"] = extract_data_from_file_list(data_files)
 
+  st.session_state.file_size_error = False
+
 if "messages" not in st.session_state:
   reset_messages()
 if "is_processing" not in st.session_state:
   st.session_state.is_processing = False
 if "prompt" not in st.session_state:
   st.session_state.prompt = ""
+if "file_size_error" not in st.session_state:
+  st.session_state.file_size_error = False
 # Store previous uploaded files to detect changes
 if "previous_data_files" not in st.session_state:
   st.session_state["previous_data_files"] = []
@@ -37,8 +41,18 @@ if "previous_data_files" not in st.session_state:
 # Couldn't use onChange because reset_messages uses new data_files
 st.session_state.data_files = data_files
 if st.session_state.data_files != st.session_state.previous_data_files:
-  reset_messages()
   st.session_state.previous_data_files = st.session_state.data_files
+  reset_messages()
+
+  max_acceptable_prompt_tokens = 30
+  max_acceptable_data_tokens = llm.n_ctx - llm.get_num_tokens(question_template) - max_acceptable_prompt_tokens
+  if llm.get_num_tokens(st.session_state.data) >= max_acceptable_data_tokens:
+    st.session_state.file_size_error = True
+    st.rerun()
+
+if st.session_state.file_size_error:
+  st.error("""The new file added adds too much text to the model.\n
+Consider shortening it and adding it again.""")
 
 st.subheader("Ask the model question about the data uploaded:")
 
@@ -46,7 +60,7 @@ st.subheader("Ask the model question about the data uploaded:")
 for msg in st.session_state.messages:
   st.chat_message(msg["role"]).write(msg["content"])
 
-if prompt := st.chat_input(disabled=st.session_state.is_processing):
+if prompt := st.chat_input(disabled=(st.session_state.is_processing or st.session_state.file_size_error)):
   st.session_state.is_processing = True
   st.session_state.prompt = prompt
   st.rerun()
