@@ -1,4 +1,5 @@
-project-env/
+venv/
+.idea/
 .DS_Store
 llama-2-7b.Q4_K_M.gguf
 __pycache__/

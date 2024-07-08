@@ -36,8 +36,8 @@ Sorted by importance:
 Of course there are many more, but those are some of the more important ones in my opinion.
 ## Docker
 ### Why use Docker
-The short answer is that Docker solves one of the most frusterating problem developers face: when you run code that you know should work, but because of your OS or settings which you don't have time to change, it doesn't work on your machine.<br>
-Docker does that by moving all of an app's code into a container, which creates an enviroment that can be replecated in almost 100% accuracy, regardless of the machine used.<br>
+The short answer is that Docker solves one of the most frustrating problem developers face: when you run code that you know should work, but because of your OS or settings which you don't have time to change, it doesn't work on your machine.<br>
+Docker does that by moving all of an app's code into a container, which creates an environment that can be replicated in almost 100% accuracy, regardless of the machine used.<br>
 There are many more advantages to using Docker to run programs over the regular way of running programs, here are some of them:
 * Docker makes it **really** easy to share code. First of all, instead of downloading the whole source code of an application, all of the software needed for it in the correct versions, you can just ask the developer to upload his app to the Docker Hub, and run it with one (most of the time not-so-long) command in the terminal.
 * Docker also makes it easy to run code that is outdated. If you wrote code a couple of years ago, than that code is probably outdated, and contains features not fully supported or not supported at all. Without Docker, you would've had to reinstall the correct versions of all the software needed to run the app, and troubleshoot program conflicts with other apps which the software you reinstalled depended upon, and It's basically just a big headache. With Docker, since all the code is in its own container, which isn't connected to any of your computer, all the software in the container stayed on the same version, so you can just run one command and your app will run without any conflicts.
